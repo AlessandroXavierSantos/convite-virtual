@@ -54,7 +54,7 @@ export const eventConfig = {
   },
 
   /** Máximo de pessoas por confirmação (convidado + acompanhantes) */
-  maxGuestsPerRsvp: 10,
+  maxGuestsPerRsvp: 4,
   /** Tamanho máximo do recado */
   maxMessageLength: 500,
 }

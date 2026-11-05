@@ -16,7 +16,7 @@ const CONFIG = {
   /** Opcional: seu e-mail para receber um aviso a cada resposta. Deixe '' para não receber. */
   NOTIFY_EMAIL: '',
   /** Máximo de pessoas por confirmação (igual ao do site). */
-  MAX_GUESTS: 10,
+  MAX_GUESTS: 4,
   TIME_ZONE: 'America/Sao_Paulo',
 };
 // ==========================================================

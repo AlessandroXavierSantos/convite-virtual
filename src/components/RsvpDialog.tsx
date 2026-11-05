@@ -1,4 +1,4 @@
-import { CheckCircle2, HeartHandshake, Plus, UserCheck, X } from 'lucide-react'
+import { CheckCircle2, HeartHandshake, Info, Plus, UserCheck, X } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { eventConfig } from '../config/event'
@@ -163,6 +163,7 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
 
   const sending = status === 'sending'
   const canAddCompanion = form.companions.length < MAX_COMPANIONS
+  const atLimit = !canAddCompanion
 
   function addCompanion() {
     const index = form.companions.length
@@ -307,6 +308,23 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
                       Vai levar alguém? Informe o nome de cada pessoa.
                     </p>
 
+                    {/* Aviso do limite: sempre visível; fica sólido quando o limite é atingido. */}
+                    <p
+                      aria-live="polite"
+                      className={`mt-2.5 flex items-start gap-2 rounded-xl border px-3 py-2.5 text-[13px] leading-snug font-semibold transition-colors ${
+                        atLimit
+                          ? 'border-brand-600 bg-brand-600 text-white'
+                          : 'border-brand-600/35 bg-white/70 text-brand-700'
+                      }`}
+                    >
+                      <Info className="mt-px size-4 shrink-0" aria-hidden />
+                      <span>
+                        {atLimit
+                          ? `Você atingiu o limite de ${eventConfig.maxGuestsPerRsvp} pessoas por confirmação.`
+                          : `Limite de ${eventConfig.maxGuestsPerRsvp} pessoas por confirmação (você + até ${MAX_COMPANIONS} acompanhantes).`}
+                      </span>
+                    </p>
+
                     {form.companions.length > 0 && (
                       <ul className="mt-3 grid gap-2.5">
                         {form.companions.map((value, index) => (
@@ -342,7 +360,7 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
                     )}
 
                     <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                      {canAddCompanion ? (
+                      {canAddCompanion && (
                         <button
                           type="button"
                           onClick={addCompanion}
@@ -351,10 +369,6 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
                           <Plus className="size-4" aria-hidden />
                           Adicionar acompanhante
                         </button>
-                      ) : (
-                        <p className="text-xs text-muted">
-                          Limite de {eventConfig.maxGuestsPerRsvp} pessoas por confirmação.
-                        </p>
                       )}
                       {form.companions.length > 0 && (
                         <p className="text-xs text-muted" aria-live="polite">
