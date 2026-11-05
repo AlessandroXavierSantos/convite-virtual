@@ -4,6 +4,8 @@ import { useState } from 'react'
 import landscapePhoto from './assets/monica-paisagem.webp'
 import portraitPhoto from './assets/monica-retrato.webp'
 import { Countdown } from './components/Countdown'
+import { MusicPlayer } from './components/MusicPlayer'
+import { PixCard } from './components/PixCard'
 import { RsvpDialog } from './components/RsvpDialog'
 import { Section } from './components/Section'
 import { eventConfig } from './config/event'
@@ -87,12 +89,14 @@ export default function App() {
         </picture>
 
         <h1 className="mt-8 font-display text-[2.6rem] leading-[1.08] font-semibold tracking-tight text-ink sm:text-6xl">
-          Aniversário
+          Festa a fantasia
           <br />
           da <span className="text-brand-600">{eventConfig.honoree}</span>
         </h1>
 
         <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-muted sm:text-lg">{eventConfig.tagline}</p>
+
+        <MusicPlayer trackId={eventConfig.music.spotifyTrackId} title={eventConfig.music.title} />
 
         <ul className="mt-9 grid gap-3 sm:grid-cols-2">
           <InfoItem icon={<CalendarDays className="size-5" />} label="Data" value={dateText} />
@@ -144,7 +148,17 @@ export default function App() {
                   <span aria-hidden className="shrink-0">
                     {item.emoji}
                   </span>
-                  <span>{item.text}</span>
+                  <span>
+                    {item.text}
+                    {item.highlight && (
+                      <>
+                        {' '}
+                        <mark className="rounded-md bg-brand-200/80 px-1.5 py-0.5 font-bold text-brand-700 box-decoration-clone">
+                          {item.highlight}
+                        </mark>
+                      </>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -159,6 +173,13 @@ export default function App() {
                 </div>
               ))}
             </dl>
+
+            <PixCard
+              pixKey={eventConfig.pix.key}
+              displayKey={eventConfig.pix.displayKey}
+              receiverName={eventConfig.pix.receiverName}
+              city={eventConfig.pix.city}
+            />
           </Section>
         </div>
       </main>

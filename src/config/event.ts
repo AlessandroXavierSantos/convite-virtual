@@ -18,7 +18,12 @@ export const eventConfig = {
 
   /** Bloco "Informações adicionais" (um item por linha) */
   additionalInfo: [
-    { emoji: '👗', text: 'Festa a Fantasia! Não são permitidas fantasias de times de futebol.' },
+    {
+      emoji: '👗',
+      text: 'Festa a Fantasia!',
+      /** Trecho opcional, exibido com destaque */
+      highlight: 'Não serão permitidas fantasias de times de futebol.',
+    },
     { emoji: '🚗', text: 'Estacionamento: Você vai beber, venha de aplicativo.' },
     { emoji: '⏰', text: 'Horário de início e encerramento: 21hrs às 3hrs.' },
     { emoji: '✅', text: 'Confirmação de presença até: Até dia 30 de novembro.' },
@@ -30,6 +35,22 @@ export const eventConfig = {
     { label: 'Calçado', value: '39' },
     { label: 'Gosta de', value: 'Cremes para o corpo, Rosto, Joias e PIX.' },
   ],
+
+  /** Pix para quem preferir contribuir em vez de comprar um presente */
+  pix: {
+    /** Chave (CPF), somente dígitos */
+    key: '03231617669',
+    displayKey: '032.316.176-69',
+    /** Nome e cidade que aparecem no app do banco ao ler o QR Code */
+    receiverName: 'Monica',
+    city: 'Belo Horizonte',
+  },
+
+  /** Música (Spotify): o id é o trecho final do link da faixa. Faixa atual: "APT." */
+  music: {
+    spotifyTrackId: '5vNRhkKd0yEAg8suGBpjeY',
+    title: 'APT.',
+  },
 
   /** Máximo de pessoas por confirmação (convidado + acompanhantes) */
   maxGuestsPerRsvp: 10,
