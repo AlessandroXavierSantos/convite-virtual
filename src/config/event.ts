@@ -16,6 +16,12 @@ export const eventConfig = {
   /** Endereço completo (também usado no mapa e nos links do Google Maps) */
   address: 'R. Sete, 64 - Cenaculo, Belo Horizonte - MG, 31615-212',
 
+  /** Aviso em destaque acima do botão "Confirmar presença" */
+  houseRule: {
+    title: 'Convidado não convida!',
+    text: 'Não é permitido convidar pessoas de fora.',
+  },
+
   /** Bloco "Informações adicionais" (um item por linha) */
   additionalInfo: [
     { emoji: '🎭', text: '', highlight: 'O uso de fantasia é obrigatório!' },

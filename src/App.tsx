@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, ExternalLink, Gift, MapPin, Navigation, PartyPopper, UserCheck } from 'lucide-react'
+import { CalendarDays, Clock, ExternalLink, Gift, MapPin, Navigation, PartyPopper, UserCheck, UserX } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import landscapePhoto from './assets/monica-paisagem.webp'
@@ -142,10 +142,24 @@ export default function App() {
           <Countdown target={eventConfig.startsAt} />
         </div>
 
+        {/* Regra da festa em destaque, logo antes de o convidado confirmar */}
+        <div
+          role="note"
+          className="mx-auto mt-10 flex max-w-md items-center gap-4 rounded-2xl border border-gold/60 bg-[#4b1521] px-5 py-4 text-left shadow-lg shadow-[#4b1521]/30"
+        >
+          <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-gold/20 text-gold-light">
+            <UserX className="size-6" aria-hidden />
+          </span>
+          <div>
+            <p className="font-display text-xl leading-tight font-semibold text-white">{eventConfig.houseRule.title}</p>
+            <p className="mt-1 text-sm leading-snug text-white/80">{eventConfig.houseRule.text}</p>
+          </div>
+        </div>
+
         <button
           type="button"
           onClick={() => setDialogOpen(true)}
-          className="group mt-10 inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-2xl bg-brand-600 px-9 py-4 text-base font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30 active:translate-y-0"
+          className="group mt-6 inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-2xl bg-brand-600 px-9 py-4 text-base font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30 active:translate-y-0"
         >
           <UserCheck className="size-5 transition group-hover:scale-110" aria-hidden />
           Confirmar presença
