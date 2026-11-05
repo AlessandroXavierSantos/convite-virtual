@@ -1,7 +1,11 @@
-import { CalendarDays, Clock, MapPin, PartyPopper, UserCheck } from 'lucide-react'
+import { CalendarDays, Clock, ExternalLink, Gift, MapPin, Navigation, PartyPopper, UserCheck } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
+import landscapePhoto from './assets/monica-paisagem.webp'
+import portraitPhoto from './assets/monica-retrato.webp'
+import { Countdown } from './components/Countdown'
 import { RsvpDialog } from './components/RsvpDialog'
+import { Section } from './components/Section'
 import { eventConfig } from './config/event'
 
 function capitalize(text: string) {
@@ -12,41 +16,51 @@ interface InfoItemProps {
   icon: ReactNode
   label: string
   value: string
-  detail?: string
   className?: string
 }
 
-function InfoItem({ icon, label, value, detail, className = '' }: InfoItemProps) {
+function InfoItem({ icon, label, value, className = '' }: InfoItemProps) {
   return (
-    <li className={`flex items-start gap-3.5 rounded-2xl ${className} border border-brand-200/60 bg-white/70 p-4 text-left shadow-xs backdrop-blur`}>
+    <li
+      className={`flex items-start gap-3.5 rounded-2xl border border-brand-200/60 bg-white/70 p-4 text-left shadow-xs backdrop-blur ${className}`}
+    >
       <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-100 text-brand-600">{icon}</span>
       <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{label}</p>
-        <p className="mt-0.5 font-semibold leading-snug text-ink">{value}</p>
-        {detail && <p className="mt-0.5 text-sm leading-snug text-muted">{detail}</p>}
+        <p className="text-xs font-semibold tracking-wider text-muted uppercase">{label}</p>
+        <p className="mt-0.5 leading-snug font-semibold text-ink">{value}</p>
       </div>
     </li>
   )
 }
 
+const linkButtonClass =
+  'inline-flex cursor-pointer items-center gap-2 rounded-xl border border-sand-300 bg-white/60 px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/25'
+
 export default function App() {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const start = new Date(eventConfig.startsAt)
+  const tz = eventConfig.timeZone
   const dateText = capitalize(
-    new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(start),
+    new Intl.DateTimeFormat('pt-BR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: tz,
+    }).format(start),
   )
-  const timeText = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  const timeText = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: tz })
     .format(start)
     .replace(':', 'h')
-  const deadlineText = eventConfig.rsvpDeadline
-    ? new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long' }).format(
-        new Date(`${eventConfig.rsvpDeadline}T12:00`),
-      )
-    : null
+
+  const query = encodeURIComponent(eventConfig.address)
+  const mapEmbedUrl = `https://www.google.com/maps?q=${query}&output=embed&hl=pt-BR`
+  const mapViewUrl = `https://www.google.com/maps/search/?api=1&query=${query}`
+  const mapDirectionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${query}`
 
   return (
-    <div className="relative isolate flex min-h-dvh flex-col items-center justify-center overflow-hidden px-4 py-12 sm:px-6">
+    <div className="relative isolate flex min-h-dvh flex-col items-center overflow-hidden px-4 py-10 sm:px-6 sm:py-14">
       {/* Fundo decorativo suave */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-32 -left-24 size-[28rem] rounded-full bg-brand-200/60 blur-3xl" />
@@ -54,26 +68,28 @@ export default function App() {
         <div className="absolute top-1/3 right-1/4 size-64 rounded-full bg-brand-300/20 blur-3xl" />
       </div>
 
-      <main className="animate-rise-in w-full max-w-xl text-center">
+      <main className="animate-rise-in w-full max-w-2xl text-center">
         <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/70 px-4 py-1.5 text-sm font-medium text-brand-600 backdrop-blur">
           <PartyPopper className="size-4" aria-hidden />
           Você está convidado(a)
         </span>
 
-        <h1 className="mt-6 font-display text-[2.6rem] leading-[1.08] font-semibold tracking-tight text-ink sm:text-6xl">
-          {eventConfig.age !== null ? (
-            <>
-              <span className="text-brand-600">{eventConfig.age} anos</span> de
-              <br />
-              {eventConfig.honoree}
-            </>
-          ) : (
-            <>
-              Aniversário
-              <br />
-              <span className="text-brand-600">{eventConfig.honoree}</span>
-            </>
-          )}
+        {/* Retrato no celular, paisagem em telas maiores */}
+        <picture className="mt-6 block">
+          <source media="(min-width: 640px)" srcSet={landscapePhoto} />
+          <img
+            src={portraitPhoto}
+            alt={`${eventConfig.honoree} com máscara dourada de carnaval e um leque de plumas azul`}
+            width={834}
+            height={1025}
+            className="aspect-[834/1025] w-full rounded-2xl object-cover shadow-xl shadow-brand-600/20 sm:aspect-[1535/1025]"
+          />
+        </picture>
+
+        <h1 className="mt-8 font-display text-[2.6rem] leading-[1.08] font-semibold tracking-tight text-ink sm:text-6xl">
+          Aniversário
+          <br />
+          da <span className="text-brand-600">{eventConfig.honoree}</span>
         </h1>
 
         <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-muted sm:text-lg">{eventConfig.tagline}</p>
@@ -81,25 +97,70 @@ export default function App() {
         <ul className="mt-9 grid gap-3 sm:grid-cols-2">
           <InfoItem icon={<CalendarDays className="size-5" />} label="Data" value={dateText} />
           <InfoItem icon={<Clock className="size-5" />} label="Horário" value={timeText} />
-          <InfoItem
-            className="sm:col-span-2"
-            icon={<MapPin className="size-5" />}
-            label="Local"
-            value={eventConfig.venueName}
-            detail={eventConfig.venueAddress}
-          />
         </ul>
+
+        <div className="mt-3">
+          <Section title="Local do Evento" icon={<MapPin />}>
+            <p className="text-[15px] leading-snug text-ink/80">{eventConfig.address}</p>
+            <iframe
+              title={`Mapa: ${eventConfig.address}`}
+              src={mapEmbedUrl}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+              className="mt-4 h-64 w-full rounded-xl border border-sand-300 bg-white sm:h-72"
+            />
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a href={mapViewUrl} target="_blank" rel="noopener noreferrer" className={linkButtonClass}>
+                <ExternalLink className="size-4" aria-hidden />
+                Ver no Google Maps
+              </a>
+              <a href={mapDirectionsUrl} target="_blank" rel="noopener noreferrer" className={linkButtonClass}>
+                <Navigation className="size-4" aria-hidden />
+                Como Chegar
+              </a>
+            </div>
+          </Section>
+        </div>
+
+        <div className="mt-10">
+          <Countdown target={eventConfig.startsAt} />
+        </div>
 
         <button
           type="button"
           onClick={() => setDialogOpen(true)}
-          className="group mt-9 inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-2xl bg-brand-600 px-9 py-4 text-base font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30 active:translate-y-0"
+          className="group mt-10 inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-2xl bg-brand-600 px-9 py-4 text-base font-semibold text-white shadow-lg shadow-brand-600/25 transition hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30 active:translate-y-0"
         >
           <UserCheck className="size-5 transition group-hover:scale-110" aria-hidden />
           Confirmar presença
         </button>
 
-        {deadlineText && <p className="mt-4 text-sm text-muted">Por favor, confirme até {deadlineText}.</p>}
+        <div className="mt-10 grid gap-3">
+          <Section title="Informações Adicionais">
+            <ul className="grid gap-2.5">
+              {eventConfig.additionalInfo.map((item) => (
+                <li key={item.text} className="flex gap-2.5 text-[15px] leading-snug text-ink/85">
+                  <span aria-hidden className="shrink-0">
+                    {item.emoji}
+                  </span>
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+
+          <Section title="Dicas para presentear" icon={<Gift />}>
+            <dl className="grid gap-2 text-[15px] leading-snug">
+              {eventConfig.giftTips.map((tip) => (
+                <div key={tip.label} className="flex flex-wrap gap-x-1.5">
+                  <dt className="font-bold text-ink">{tip.label}:</dt>
+                  <dd className="text-ink/85">{tip.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </Section>
+        </div>
       </main>
 
       <RsvpDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />

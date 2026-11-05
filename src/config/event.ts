@@ -1,21 +1,36 @@
 /**
  * Dados do evento. Troque os valores abaixo para personalizar o convite.
- * (Textos de exemplo — substitua pelos dados reais da festa.)
  */
 export const eventConfig = {
   /** Nome de quem faz aniversário */
-  honoree: 'Nome do Aniversariante',
-  /** Idade que está completando (use null para esconder) */
-  age: 30 as number | null,
+  honoree: 'Monica',
   /** Frase de destaque abaixo do título */
   tagline: 'Venha celebrar comigo esse dia especial!',
-  /** Data e hora de início, no formato ISO local (AAAA-MM-DDTHH:mm) */
-  startsAt: '2026-12-12T18:00',
-  /** Local da festa */
-  venueName: 'Nome do local',
-  venueAddress: 'Rua Exemplo, 123 — Bairro, Cidade',
-  /** Prazo para confirmar (AAAA-MM-DD). Use null para não exibir. */
-  rsvpDeadline: '2026-12-05' as string | null,
+  /**
+   * Data e hora de início, com fuso de Brasília (-03:00).
+   * Formato: AAAA-MM-DDTHH:mm:ss-03:00
+   */
+  startsAt: '2026-12-05T21:00:00-03:00',
+  /** Fuso usado para exibir data e hora, independente de onde o convidado está */
+  timeZone: 'America/Sao_Paulo',
+  /** Endereço completo (também usado no mapa e nos links do Google Maps) */
+  address: 'R. Sete, 64 - Cenaculo, Belo Horizonte - MG, 31615-212',
+
+  /** Bloco "Informações adicionais" (um item por linha) */
+  additionalInfo: [
+    { emoji: '👗', text: 'Festa a Fantasia! Não são permitidas fantasias de times de futebol.' },
+    { emoji: '🚗', text: 'Estacionamento: Você vai beber, venha de aplicativo.' },
+    { emoji: '⏰', text: 'Horário de início e encerramento: 21hrs às 3hrs.' },
+    { emoji: '✅', text: 'Confirmação de presença até: Até dia 30 de novembro.' },
+  ],
+
+  /** Bloco "Dicas para presentear" */
+  giftTips: [
+    { label: 'Roupa', value: 'Blusa G' },
+    { label: 'Calçado', value: '39' },
+    { label: 'Gosta de', value: 'Cremes para o corpo, Rosto, Joias e PIX.' },
+  ],
+
   /** Máximo de pessoas por confirmação (convidado + acompanhantes) */
   maxGuestsPerRsvp: 10,
   /** Tamanho máximo do recado */

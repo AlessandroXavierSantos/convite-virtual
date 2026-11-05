@@ -12,6 +12,9 @@
   --color-brand-500: #b0693f;
   --color-brand-600: #8f4f30;
   --color-brand-700: #763f25;
+  /* Bege dos cartões de informação (local, informações, presentes) */
+  --color-sand-100: #f1e8dc;
+  --color-sand-300: #d9c9b4;
   --color-ink: #0f172a;
   --color-muted: #64748b;
 }

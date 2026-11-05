@@ -16,8 +16,8 @@ npm run lint
 
 ## Personalizar o convite
 
-Os dados da festa (nome, idade, data, horário, local, prazo) ficam em um único arquivo:
-[`src/config/event.ts`](src/config/event.ts). Os valores atuais são de exemplo.
+Os dados da festa (nome, data, horário, endereço, informações adicionais e dicas de presente) ficam em um único arquivo:
+[`src/config/event.ts`](src/config/event.ts). As fotos ficam em `src/assets/`.
 
 As cores da identidade visual ficam em [`src/index.css`](src/index.css) (bloco `@theme`).
 
@@ -27,6 +27,8 @@ As cores da identidade visual ficam em [`src/index.css`](src/index.css) (bloco `
 src/
   App.tsx                    tela inicial do convite
   components/
+    Countdown.tsx            contagem regressiva até a festa
+    Section.tsx              cartão recolhível (local, informações, presentes)
     Modal.tsx                diálogo acessível (Esc, foco, scroll travado)
     RsvpDialog.tsx           formulário de confirmação de presença
   config/event.ts            dados do evento
