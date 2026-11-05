@@ -1,0 +1,58 @@
+@import 'tailwindcss';
+
+/* Identidade visual: marrom terroso + pêssego suave (baseada no formulário de referência) */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fraunces', ui-serif, Georgia, serif;
+
+  --color-brand-50: #fff8f3;
+  --color-brand-100: #fce9df;
+  --color-brand-200: #f6d3c1;
+  --color-brand-300: #e8b69c;
+  --color-brand-500: #b0693f;
+  --color-brand-600: #8f4f30;
+  --color-brand-700: #763f25;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-brand-50);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Animações do modal e da entrada da página */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+.animate-fade-in { animation: fade-in 0.2s ease-out both; }
+.animate-pop-in { animation: pop-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-rise-in { animation: rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-pop-in,
+  .animate-rise-in {
+    animation: none;
+  }
+}
