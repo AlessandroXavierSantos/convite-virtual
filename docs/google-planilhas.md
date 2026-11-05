@@ -54,11 +54,23 @@ configurada no serviço de hospedagem **antes** do build (ela não vai para o Gi
      vira **Cancelado**.
 2. Apague as linhas de teste da planilha (mantenha o cabeçalho).
 
+## Atualizar o script depois de uma mudança
+
+Quando o arquivo `apps-script/Code.gs` mudar (por exemplo, ao incluir os nomes dos acompanhantes):
+
+1. Abra a planilha → **Extensões → Apps Script**, apague o código antigo e cole o novo.
+   Mantenha o seu `NOTIFY_EMAIL` (e o `SITE_URL`, se já tiver).
+2. Salve e rode a função **`configurar`** uma vez (ela ajusta a planilha existente: a coluna
+   **Acompanhantes** é inserida sozinha, sem perder as respostas já recebidas).
+3. **Implantar → Gerenciar implantações → lápis (editar) → Versão: Nova versão → Implantar.**
+   O URL continua o mesmo, então o `.env.local` não muda.
+
 ## Como funciona
 
 | Situação | O que acontece |
 | --- | --- |
 | Confirma com e-mail | Grava a linha e envia o e-mail de confirmação com link para cancelar |
+| Leva acompanhantes | Cada acompanhante tem o nome informado; a coluna **Acompanhantes** guarda os nomes (separados por `;`) e **Pessoas** soma o convidado + acompanhantes |
 | Responde de novo com o mesmo e-mail | Atualiza a linha (não duplica) |
 | Marca "Não vou" | Grava como **Não vou**, com 0 pessoas, e não envia e-mail ao convidado |
 | Cancela pelo link | Linha vira **Cancelado**; se voltar a confirmar, entra uma linha nova |

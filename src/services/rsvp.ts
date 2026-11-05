@@ -1,6 +1,8 @@
 export interface RsvpPayload {
   attending: boolean
   name: string
+  /** Nomes dos acompanhantes (vazio se não vai ou vai sozinho). */
+  companions: string[]
   /** Total de pessoas, incluindo o convidado. Sempre 0 quando não vai. */
   guests: number
   email: string

@@ -1,4 +1,4 @@
-import { CheckCircle2, HeartHandshake, UserCheck, X } from 'lucide-react'
+import { CheckCircle2, HeartHandshake, Plus, UserCheck, X } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { eventConfig } from '../config/event'
@@ -13,26 +13,30 @@ interface RsvpDialogProps {
 interface FormState {
   attending: boolean
   name: string
-  guests: string
+  /** Nome de cada acompanhante (um campo por pessoa). */
+  companions: string[]
   email: string
   phone: string
   message: string
   website: string
 }
 
-type FormErrors = Partial<Record<'name' | 'guests' | 'email' | 'phone', string>>
+type FormErrors = Partial<Record<'name' | 'companions' | 'email' | 'phone', string>>
 
 const INITIAL: FormState = {
   attending: true,
   name: '',
-  guests: '1',
+  companions: [],
   email: '',
   phone: '',
   message: '',
   website: '',
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+/** Quantos acompanhantes cabem em uma confirmação (o limite conta com o próprio convidado). */
+const MAX_COMPANIONS = eventConfig.maxGuestsPerRsvp - 1
+
+const EMAIL_RE =/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 const inputClass =
   'w-full rounded-xl border border-brand-200/70 bg-white px-3.5 py-2.5 text-[15px] text-ink shadow-xs outline-none transition placeholder:text-slate-400 focus:border-brand-600 focus:ring-4 focus:ring-brand-600/15 aria-[invalid=true]:border-red-400 aria-[invalid=true]:ring-red-100'
@@ -42,9 +46,8 @@ function validate(form: FormState): FormErrors {
   if (form.name.trim().length < 2) errors.name = 'Informe seu nome.'
 
   if (form.attending) {
-    const guests = Number(form.guests)
-    if (!Number.isInteger(guests) || guests < 1 || guests > eventConfig.maxGuestsPerRsvp) {
-      errors.guests = `Informe de 1 a ${eventConfig.maxGuestsPerRsvp} pessoas.`
+    if (form.companions.some((c) => c.trim().length < 2)) {
+      errors.companions = 'Informe o nome de cada acompanhante ou remova o campo vazio.'
     }
   }
 
@@ -129,17 +132,24 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
     const found = validate(form)
     setErrors(found)
     if (Object.keys(found).length > 0) {
-      const firstKey = (['name', 'guests', 'email', 'phone'] as const).find((k) => found[k])
-      if (firstKey) document.getElementById(id(firstKey))?.focus()
+      const firstKey = (['name', 'companions', 'email', 'phone'] as const).find((k) => found[k])
+      if (firstKey === 'companions') {
+        const empty = form.companions.findIndex((c) => c.trim().length < 2)
+        document.getElementById(id(`companion-${empty}`))?.focus()
+      } else if (firstKey) {
+        document.getElementById(id(firstKey))?.focus()
+      }
       return
     }
 
     setStatus('sending')
     try {
+      const companions = form.attending ? form.companions.map((c) => c.trim()) : []
       await submitRsvp({
         attending: form.attending,
         name: form.name.trim(),
-        guests: form.attending ? Number(form.guests) : 0,
+        companions,
+        guests: form.attending ? 1 + companions.length : 0,
         email: form.email.trim(),
         phone: form.phone.trim(),
         message: form.message.trim(),
@@ -152,6 +162,25 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
   }
 
   const sending = status === 'sending'
+  const canAddCompanion = form.companions.length < MAX_COMPANIONS
+
+  function addCompanion() {
+    const index = form.companions.length
+    setForm((prev) => ({ ...prev, companions: [...prev.companions, ''] }))
+    setErrors((prev) => ({ ...prev, companions: undefined }))
+    // Depois que o campo novo aparece, leva o cursor para ele.
+    setTimeout(() => document.getElementById(id(`companion-${index}`))?.focus(), 0)
+  }
+
+  function updateCompanion(index: number, value: string) {
+    setForm((prev) => ({ ...prev, companions: prev.companions.map((c, i) => (i === index ? value : c)) }))
+    setErrors((prev) => ({ ...prev, companions: undefined }))
+  }
+
+  function removeCompanion(index: number) {
+    setForm((prev) => ({ ...prev, companions: prev.companions.filter((_, i) => i !== index) }))
+    setErrors((prev) => ({ ...prev, companions: undefined }))
+  }
 
   return (
     <Modal open={open} onClose={handleClose} labelledBy={titleId}>
@@ -165,7 +194,11 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
           </h2>
           <p className="max-w-sm text-[15px] leading-relaxed text-muted">
             {form.attending
-              ? `Que bom que você vem, ${form.name.trim().split(' ')[0]}! Mal podemos esperar para te ver.`
+              ? `Que bom que você vem, ${form.name.trim().split(' ')[0]}! Mal podemos esperar para te ver${
+                  form.companions.length > 0
+                    ? ` (e ${form.companions.length === 1 ? 'seu acompanhante' : 'seus acompanhantes'})`
+                    : ''
+                }.`
               : `Sentiremos sua falta, ${form.name.trim().split(' ')[0]}. Obrigado por responder!`}
           </p>
           {rsvpEnabled && form.attending && form.email.trim() && (
@@ -249,39 +282,87 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
               </fieldset>
 
               <div className="grid gap-x-4 gap-y-4 sm:grid-cols-2 sm:items-start">
-                <Field id={id('name')} label="Nome" error={errors.name}>
-                  <input
-                    id={id('name')}
-                    type="text"
-                    autoComplete="name"
-                    value={form.name}
-                    onChange={(e) => set('name', e.target.value)}
-                    aria-invalid={!!errors.name}
-                    aria-describedby={errors.name ? `${id('name')}-msg` : undefined}
-                    className={inputClass}
-                  />
-                </Field>
-
-                {form.attending && (
-                  <Field
-                    id={id('guests')}
-                    label="Quantidade de pessoas"
-                    hint="Contando com você."
-                    error={errors.guests}
-                  >
+                <div className="sm:col-span-2">
+                  <Field id={id('name')} label="Nome" error={errors.name}>
                     <input
-                      id={id('guests')}
-                      type="number"
-                      inputMode="numeric"
-                      min={1}
-                      max={eventConfig.maxGuestsPerRsvp}
-                      value={form.guests}
-                      onChange={(e) => set('guests', e.target.value)}
-                      aria-invalid={!!errors.guests}
-                      aria-describedby={`${id('guests')}-msg`}
+                      id={id('name')}
+                      type="text"
+                      autoComplete="name"
+                      value={form.name}
+                      onChange={(e) => set('name', e.target.value)}
+                      aria-invalid={!!errors.name}
+                      aria-describedby={errors.name ? `${id('name')}-msg` : undefined}
                       className={inputClass}
                     />
                   </Field>
+                </div>
+
+                {form.attending && (
+                  <div className="sm:col-span-2">
+                    <p className="text-sm font-semibold text-ink">
+                      Acompanhantes
+                      <span className="ml-1 font-normal text-muted">(opcional)</span>
+                    </p>
+                    <p className="mt-1 text-xs leading-snug text-muted">
+                      Vai levar alguém? Informe o nome de cada pessoa.
+                    </p>
+
+                    {form.companions.length > 0 && (
+                      <ul className="mt-3 grid gap-2.5">
+                        {form.companions.map((value, index) => (
+                          <li key={index} className="flex items-center gap-2">
+                            <input
+                              id={id(`companion-${index}`)}
+                              type="text"
+                              autoComplete="off"
+                              placeholder={`Nome do acompanhante ${index + 1}`}
+                              aria-label={`Nome do acompanhante ${index + 1}`}
+                              value={value}
+                              onChange={(e) => updateCompanion(index, e.target.value)}
+                              aria-invalid={!!errors.companions && value.trim().length < 2}
+                              className={inputClass}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeCompanion(index)}
+                              aria-label={`Remover acompanhante ${index + 1}`}
+                              className="grid size-[42px] shrink-0 cursor-pointer place-items-center rounded-xl border border-brand-200 bg-white text-muted transition hover:border-red-300 hover:text-red-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/20"
+                            >
+                              <X className="size-4" aria-hidden />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {errors.companions && (
+                      <p role="alert" className="mt-2 text-xs text-red-600">
+                        {errors.companions}
+                      </p>
+                    )}
+
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                      {canAddCompanion ? (
+                        <button
+                          type="button"
+                          onClick={addCompanion}
+                          className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-brand-600/50 bg-white/50 px-4 py-2.5 text-sm font-semibold text-brand-600 transition hover:border-brand-600 hover:bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/25"
+                        >
+                          <Plus className="size-4" aria-hidden />
+                          Adicionar acompanhante
+                        </button>
+                      ) : (
+                        <p className="text-xs text-muted">
+                          Limite de {eventConfig.maxGuestsPerRsvp} pessoas por confirmação.
+                        </p>
+                      )}
+                      {form.companions.length > 0 && (
+                        <p className="text-xs text-muted" aria-live="polite">
+                          Total: {1 + form.companions.length} pessoas (você + {form.companions.length})
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 )}
 
                 <Field

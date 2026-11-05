@@ -23,8 +23,8 @@ const CONFIG = {
 
 const SHEET_NAME = 'Confirmações';
 const SUMMARY_SHEET_NAME = 'Resumo';
-const HEADERS = ['Data/hora', 'Status', 'Nome', 'Pessoas', 'E-mail', 'Telefone', 'Recado', 'Token'];
-const COL = { TIME: 1, STATUS: 2, NAME: 3, GUESTS: 4, EMAIL: 5, PHONE: 6, MESSAGE: 7, TOKEN: 8 };
+const HEADERS = ['Data/hora', 'Status', 'Nome', 'Pessoas', 'Acompanhantes', 'E-mail', 'Telefone', 'Recado', 'Token'];
+const COL = { TIME: 1, STATUS: 2, NAME: 3, GUESTS: 4, COMPANIONS: 5, EMAIL: 6, PHONE: 7, MESSAGE: 8, TOKEN: 9 };
 const STATUS = { YES: 'Vou', NO: 'Não vou', CANCELED: 'Cancelado' };
 
 /** Rode UMA vez no editor: cria as abas e pede as permissões necessárias. */
@@ -80,13 +80,18 @@ function saveRsvp_(p) {
   const email = text_(p.email, 120).toLowerCase();
   const phone = text_(p.phone, 30);
   const message = text_(p.message, 500);
-  const guests = attending ? parseInt(p.guests, 10) : 0;
+  // Nome de cada acompanhante. O total de pessoas é calculado aqui (convidado + acompanhantes).
+  const companions =
+    attending && Array.isArray(p.companions) ? p.companions.map((c) => text_(c, 60).replace(/;/g, ',')) : [];
+  const guests = attending ? 1 + companions.length : 0;
 
   if (name.length < 2) return { ok: false, error: 'name' };
-  if (attending && !(guests >= 1 && guests <= CONFIG.MAX_GUESTS)) return { ok: false, error: 'guests' };
+  if (companions.length > CONFIG.MAX_GUESTS - 1) return { ok: false, error: 'guests' };
+  if (companions.some((c) => c.length < 2)) return { ok: false, error: 'companions' };
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { ok: false, error: 'email' };
 
   const status = attending ? STATUS.YES : STATUS.NO;
+  const companionsText = companions.join('; ');
   const now = Utilities.formatDate(new Date(), CONFIG.TIME_ZONE, 'dd/MM/yyyy HH:mm:ss');
   const sheet = getSheet_();
   let token;
@@ -107,10 +112,12 @@ function saveRsvp_(p) {
     }
     if (row > 0) {
       token = String(values[row - 1][COL.TOKEN - 1]);
-      sheet.getRange(row, 1, 1, 7).setValues([[now, status, safeCell_(name), guests, email, safeCell_(phone), safeCell_(message)]]);
+      sheet
+        .getRange(row, 1, 1, COL.MESSAGE)
+        .setValues([[now, status, safeCell_(name), guests, safeCell_(companionsText), email, safeCell_(phone), safeCell_(message)]]);
     } else {
       token = Utilities.getUuid();
-      sheet.appendRow([now, status, safeCell_(name), guests, email, safeCell_(phone), safeCell_(message), token]);
+      sheet.appendRow([now, status, safeCell_(name), guests, safeCell_(companionsText), email, safeCell_(phone), safeCell_(message), token]);
     }
   } finally {
     lock.releaseLock();
@@ -118,8 +125,8 @@ function saveRsvp_(p) {
 
   // E-mails: se falharem, a confirmação já está salva na planilha.
   try {
-    if (email && attending) sendGuestEmail_(name, guests, email, token);
-    if (CONFIG.NOTIFY_EMAIL) sendOwnerEmail_(status, name, guests, phone, message);
+    if (email && attending) sendGuestEmail_(name, companions, email, token);
+    if (CONFIG.NOTIFY_EMAIL) sendOwnerEmail_(status, name, companions, phone, message);
   } catch (err) {
     console.error(err);
   }
@@ -204,21 +211,25 @@ function page_(title, body) {
 
 // ---------------------------- E-mails ----------------------------
 
-function sendGuestEmail_(name, guests, email, token) {
+function sendGuestEmail_(name, companions, email, token) {
   const first = name.split(' ')[0];
   const cancelUrl = ScriptApp.getService().getUrl() + '?action=cancel&token=' + encodeURIComponent(token);
-  const people = guests === 1 ? '1 pessoa' : guests + ' pessoas';
+  const total = 1 + companions.length;
+  const people = total === 1 ? 'só você' : total + ' pessoas';
+  const withLine = companions.length ? 'Acompanhante' + (companions.length > 1 ? 's' : '') + ': ' + companions.join(', ') : '';
   const siteLine = CONFIG.SITE_URL ? '\nConvite: ' + CONFIG.SITE_URL : '';
 
   const plain =
-    'Oi, ' + first + '! Sua presença está confirmada (' + people + ').\n\n' +
+    'Oi, ' + first + '! Sua presença está confirmada (' + people + ').\n' +
+    (withLine ? withLine + '\n' : '') + '\n' +
     CONFIG.EVENT_TITLE + '\n' + CONFIG.EVENT_WHEN + '\n' + CONFIG.EVENT_WHERE + siteLine + '\n\n' +
     'Precisa cancelar? Use este link: ' + cancelUrl;
 
   const html =
     '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;color:#0f172a">' +
     '<h2 style="color:#8f4f30">Presença confirmada! 🎉</h2>' +
-    '<p>Oi, ' + esc_(first) + '! Sua presença está confirmada (<b>' + esc_(people) + '</b>).</p>' +
+    '<p>Oi, ' + esc_(first) + '! Sua presença está confirmada (<b>' + esc_(people) + '</b>).' +
+    (withLine ? '<br>' + esc_(withLine) : '') + '</p>' +
     '<p><b>' + esc_(CONFIG.EVENT_TITLE) + '</b><br>' + esc_(CONFIG.EVENT_WHEN) + '<br>' + esc_(CONFIG.EVENT_WHERE) + '</p>' +
     (CONFIG.SITE_URL ? '<p><a href="' + esc_(CONFIG.SITE_URL) + '">Ver o convite</a></p>' : '') +
     '<p style="color:#64748b;font-size:14px">Precisa cancelar? <a href="' + esc_(cancelUrl) + '">Clique aqui</a>.</p>' +
@@ -233,12 +244,15 @@ function sendGuestEmail_(name, guests, email, token) {
   });
 }
 
-function sendOwnerEmail_(status, name, guests, phone, message) {
-  const resumo = status === STATUS.YES ? name + ' vai (' + guests + ' pessoa(s))' : name + ' não vai';
+function sendOwnerEmail_(status, name, companions, phone, message) {
+  const resumo = status === STATUS.YES ? name + ' vai (' + (1 + companions.length) + ' pessoa(s))' : name + ' não vai';
   MailApp.sendEmail(
     CONFIG.NOTIFY_EMAIL,
     'Nova resposta: ' + resumo,
-    resumo + (phone ? '\nTelefone: ' + phone : '') + (message ? '\nRecado: ' + message : ''),
+    resumo +
+      (companions.length ? '\nAcompanhantes: ' + companions.join(', ') : '') +
+      (phone ? '\nTelefone: ' + phone : '') +
+      (message ? '\nRecado: ' + message : ''),
   );
 }
 
@@ -254,10 +268,21 @@ function getSheet_() {
     sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#fce9df');
     sheet.setColumnWidth(COL.TIME, 140);
     sheet.setColumnWidth(COL.NAME, 200);
+    sheet.setColumnWidth(COL.COMPANIONS, 240);
     sheet.setColumnWidth(COL.EMAIL, 200);
     sheet.setColumnWidth(COL.MESSAGE, 320);
   }
+  migrateCompanionsColumn_(sheet);
   return sheet;
+}
+
+/** Planilhas criadas antes da coluna "Acompanhantes": insere a coluna depois de "Pessoas". */
+function migrateCompanionsColumn_(sheet) {
+  if (sheet.getRange(1, COL.COMPANIONS).getValue() === HEADERS[COL.COMPANIONS - 1]) return;
+  if (sheet.getRange(1, COL.COMPANIONS).getValue() !== 'E-mail') return; // layout desconhecido: não mexe
+  sheet.insertColumnAfter(COL.GUESTS);
+  sheet.getRange(1, COL.COMPANIONS).setValue(HEADERS[COL.COMPANIONS - 1]).setFontWeight('bold').setBackground('#fce9df');
+  sheet.setColumnWidth(COL.COMPANIONS, 240);
 }
 
 function getSummarySheet_() {
