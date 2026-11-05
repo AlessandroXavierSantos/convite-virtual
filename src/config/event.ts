@@ -18,6 +18,7 @@ export const eventConfig = {
 
   /** Bloco "Informações adicionais" (um item por linha) */
   additionalInfo: [
+    { emoji: '🎭', text: '', highlight: 'O uso de fantasia é obrigatório!' },
     {
       emoji: '👗',
       text: 'Festa a Fantasia!',

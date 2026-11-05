@@ -152,7 +152,7 @@ export default function App() {
                     {item.text}
                     {item.highlight && (
                       <>
-                        {' '}
+                        {item.text && ' '}
                         <mark className="rounded-md bg-brand-200/80 px-1.5 py-0.5 font-bold text-brand-700 box-decoration-clone">
                           {item.highlight}
                         </mark>
