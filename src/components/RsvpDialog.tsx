@@ -2,7 +2,7 @@ import { CheckCircle2, HeartHandshake, UserCheck, X } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { eventConfig } from '../config/event'
-import { submitRsvp } from '../services/rsvp'
+import { rsvpEnabled, submitRsvp } from '../services/rsvp'
 import { Modal } from './Modal'
 
 interface RsvpDialogProps {
@@ -17,6 +17,7 @@ interface FormState {
   email: string
   phone: string
   message: string
+  website: string
 }
 
 type FormErrors = Partial<Record<'name' | 'guests' | 'email' | 'phone', string>>
@@ -28,6 +29,7 @@ const INITIAL: FormState = {
   email: '',
   phone: '',
   message: '',
+  website: '',
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
@@ -141,6 +143,7 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
         email: form.email.trim(),
         phone: form.phone.trim(),
         message: form.message.trim(),
+        website: form.website,
       })
       setStatus('done')
     } catch {
@@ -165,6 +168,12 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
               ? `Que bom que você vem, ${form.name.trim().split(' ')[0]}! Mal podemos esperar para te ver.`
               : `Sentiremos sua falta, ${form.name.trim().split(' ')[0]}. Obrigado por responder!`}
           </p>
+          {rsvpEnabled && form.attending && form.email.trim() && (
+            <p className="max-w-sm text-sm leading-relaxed text-muted">
+              Enviamos a confirmação para <strong className="font-semibold text-ink">{form.email.trim()}</strong>, com um link para
+              cancelar se precisar.
+            </p>
+          )}
           <button
             type="button"
             onClick={handleClose}
@@ -196,6 +205,20 @@ export function RsvpDialog({ open, onClose }: RsvpDialogProps) {
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7">
+            {/* Armadilha para robôs: fica fora da tela e nunca é preenchida por pessoas. */}
+            <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+              <label>
+                Não preencha este campo
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={form.website}
+                  onChange={(e) => set('website', e.target.value)}
+                />
+              </label>
+            </div>
             <div className="rounded-2xl border border-brand-200/70 bg-brand-100 p-4 sm:p-5">
               <fieldset className="mb-5">
                 <legend className="mb-2 text-sm font-semibold">Você vai?</legend>

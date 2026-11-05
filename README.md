@@ -21,6 +21,12 @@ Os dados da festa (nome, data, horário, endereço, informações adicionais e d
 
 As cores da identidade visual ficam em [`src/index.css`](src/index.css) (bloco `@theme`).
 
+## Salvar as confirmações
+
+As respostas vão para uma planilha do Google (e o convidado recebe um e-mail de confirmação com link
+para cancelar). Passo a passo em [docs/google-planilhas.md](docs/google-planilhas.md). Sem configurar
+nada, o envio do formulário é apenas simulado.
+
 ## Estrutura
 
 ```
@@ -32,12 +38,13 @@ src/
     Modal.tsx                diálogo acessível (Esc, foco, scroll travado)
     RsvpDialog.tsx           formulário de confirmação de presença
   config/event.ts            dados do evento
-  services/rsvp.ts           envio da confirmação
+  services/rsvp.ts           envio da confirmação para o Google Planilhas
+apps-script/Code.gs          script do Google que grava na planilha e envia os e-mails
+docs/                        guias de configuração
 ```
 
 ## Status
 
 - [x] Tela inicial e formulário de confirmação (validação, máscara de telefone, estado de sucesso)
-- [ ] Salvar as respostas (hoje o envio é **simulado** em `src/services/rsvp.ts`)
-- [ ] E-mail de confirmação com link de cancelamento
+- [x] Salvar as respostas em planilha e enviar e-mail de confirmação com cancelamento (falta só você instalar o script: veja o guia)
 - [ ] Mais personalizações da tela
