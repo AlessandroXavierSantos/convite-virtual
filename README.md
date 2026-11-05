@@ -27,6 +27,12 @@ As respostas vão para uma planilha do Google (e o convidado recebe um e-mail de
 para cancelar). Passo a passo em [docs/google-planilhas.md](docs/google-planilhas.md). Sem configurar
 nada, o envio do formulário é apenas simulado.
 
+## Publicar o convite (link para os convidados)
+
+O site é publicado automaticamente no GitHub Pages a cada atualização da `main`:
+**https://alessandroxaviersantos.github.io/convite-virtual/**
+Passo a passo e solução de problemas em [docs/publicar-github-pages.md](docs/publicar-github-pages.md).
+
 ## Estrutura
 
 ```
@@ -40,7 +46,8 @@ src/
   config/event.ts            dados do evento
   services/rsvp.ts           envio da confirmação para o Google Planilhas
 apps-script/Code.gs          script do Google que grava na planilha e envia os e-mails
-docs/                        guias de configuração
+docs/                        guias de configuração (planilha e publicação)
+.github/workflows/           publicação automática no GitHub Pages
 ```
 
 ## Status
