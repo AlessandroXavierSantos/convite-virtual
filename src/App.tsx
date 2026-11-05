@@ -4,6 +4,7 @@ import { useState } from 'react'
 import landscapePhoto from './assets/monica-paisagem.webp'
 import portraitPhoto from './assets/monica-retrato.webp'
 import { Countdown } from './components/Countdown'
+import { Intro } from './components/Intro'
 import { MusicPlayer } from './components/MusicPlayer'
 import { PixCard } from './components/PixCard'
 import { RsvpDialog } from './components/RsvpDialog'
@@ -40,6 +41,7 @@ const linkButtonClass =
 
 export default function App() {
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [introDone, setIntroDone] = useState(false)
 
   const start = new Date(eventConfig.startsAt)
   const tz = eventConfig.timeZone
@@ -62,7 +64,16 @@ export default function App() {
   const mapDirectionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${query}`
 
   return (
-    <div className="relative isolate flex min-h-dvh flex-col items-center overflow-hidden px-4 py-10 sm:px-6 sm:py-14">
+    <>
+      {!introDone && (
+        <Intro
+          honoree={eventConfig.honoree}
+          dateText={dateText}
+          timeText={timeText}
+          onDone={() => setIntroDone(true)}
+        />
+      )}
+    <div inert={!introDone} className="relative isolate flex min-h-dvh flex-col items-center overflow-hidden px-4 py-10 sm:px-6 sm:py-14">
       {/* Fundo decorativo suave */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-32 -left-24 size-[28rem] rounded-full bg-brand-200/60 blur-3xl" />
@@ -186,5 +197,6 @@ export default function App() {
 
       <RsvpDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </div>
+    </>
   )
 }
